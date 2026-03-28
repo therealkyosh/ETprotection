@@ -1,0 +1,144 @@
+local UIS = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local Market = game:GetService("MarketplaceService")
+local Player = Players.LocalPlayer
+
+-- Configuration
+local TargetPlaceId = 11276071411 
+local TargetUniverseId = 4019583467
+local GameName = "Unknown"
+
+-- Get Actual Game Name
+pcall(function()
+    GameName = Market:GetProductInfo(game.PlaceId).Name
+end)
+
+-- Create Loader UI
+local ET_Loader = Instance.new("ScreenGui")
+ET_Loader.Name = "ProjectET_Loader"
+ET_Loader.Parent = CoreGui
+ET_Loader.ResetOnSpawn = false
+
+-----------------------------------------------------------------------
+-- LOADER UI (CENTERED & NON-DRAGGABLE)
+-----------------------------------------------------------------------
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 360, 0, 220)
+Main.Position = UDim2.new(0.5, -180, 0.5, -110)
+Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+Main.BorderSizePixel = 0
+Main.Parent = ET_Loader
+
+local Stroke = Instance.new("UIStroke", Main)
+Stroke.Color = Color3.fromRGB(255, 255, 255)
+Stroke.Thickness = 1.5
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
+
+-- Welcome Text
+local Welcome = Instance.new("TextLabel")
+Welcome.Size = UDim2.new(1, 0, 0, 30)
+Welcome.Position = UDim2.new(0, 0, 0, 15)
+Welcome.BackgroundTransparency = 1
+Welcome.Text = "Welcome, " .. Player.DisplayName
+Welcome.TextColor3 = Color3.fromRGB(255, 255, 255)
+Welcome.Font = Enum.Font.GothamBold
+Welcome.TextSize = 18
+Welcome.Parent = Main
+
+-- Checking Text
+local Checking = Instance.new("TextLabel")
+Checking.Size = UDim2.new(1, 0, 0, 20)
+Checking.Position = UDim2.new(0, 0, 0, 40)
+Checking.BackgroundTransparency = 1
+Checking.Text = "Checking Game: [" .. GameName .. "]"
+Checking.TextColor3 = Color3.fromRGB(180, 180, 180)
+Checking.Font = Enum.Font.Gotham
+Checking.TextSize = 13
+Checking.Parent = Main
+
+-- Discord Button
+local DiscordBtn = Instance.new("TextButton")
+DiscordBtn.Size = UDim2.new(0.8, 0, 0, 35)
+DiscordBtn.Position = UDim2.new(0.1, 0, 0.4, 0)
+DiscordBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+DiscordBtn.Text = "Join Discord"
+DiscordBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DiscordBtn.Font = Enum.Font.GothamMedium
+DiscordBtn.TextSize = 14
+DiscordBtn.Parent = Main
+Instance.new("UICorner", DiscordBtn).CornerRadius = UDim.new(0, 6)
+
+DiscordBtn.MouseButton1Click:Connect(function()
+    setclipboard("https://discord.gg/znnJwS8Fsq")
+    DiscordBtn.Text = "Copied to Clipboard!"
+    task.wait(2)
+    DiscordBtn.Text = "Join Discord"
+end)
+
+-- Loading Bar
+local BarBack = Instance.new("Frame")
+BarBack.Size = UDim2.new(0.8, 0, 0, 6)
+BarBack.Position = UDim2.new(0.1, 0, 0.75, 0)
+BarBack.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+BarBack.BorderSizePixel = 0
+BarBack.Parent = Main
+Instance.new("UICorner", BarBack).CornerRadius = UDim.new(1, 0)
+
+local BarFill = Instance.new("Frame")
+BarFill.Size = UDim2.new(0, 0, 1, 0)
+BarFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+BarFill.BorderSizePixel = 0
+BarFill.Parent = BarBack
+Instance.new("UICorner", BarFill).CornerRadius = UDim.new(1, 0)
+
+local PercentLabel = Instance.new("TextLabel")
+PercentLabel.Size = UDim2.new(1, 0, 0, 20)
+PercentLabel.Position = UDim2.new(0, 0, 0.82, 0)
+PercentLabel.BackgroundTransparency = 1
+PercentLabel.Text = "Initializing..."
+PercentLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+PercentLabel.Font = Enum.Font.Gotham
+PercentLabel.TextSize = 12
+PercentLabel.Parent = Main
+
+-----------------------------------------------------------------------
+-- LOGIC & NOTIFICATION
+-----------------------------------------------------------------------
+
+local function Notify(title, text)
+    StarterGui:SetCore("SendNotification", {
+        Title = title;
+        Text = text;
+        Icon = "rbxassetid://90854014659104"; -- Using your provided logo ID
+        Duration = 5;
+    })
+end
+
+task.spawn(function()
+    task.wait(1) -- Short pause for visual effect
+    
+    -- Check Compatibility
+    if game.PlaceId == TargetPlaceId or game.GameId == TargetUniverseId then
+        -- Game is supported: Run Loader
+        for i = 0, 100, 2 do
+            local progress = i / 100
+            TweenService:Create(BarFill, TweenInfo.new(0.1), {Size = UDim2.new(progress, 0, 1, 0)}):Play()
+            PercentLabel.Text = i .. "%"
+            task.wait(0.05)
+        end
+        
+        task.wait(0.5)
+        ET_Loader:Destroy()
+        
+        -- Execute Script
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/therealkyosh/ProjectETLua/refs/heads/main/NPCorDIE", true))()
+    else
+        -- Game NOT supported: Destroy and Notify
+        ET_Loader:Destroy()
+        Notify("Project ET", "Game Not Supported: " .. GameName)
+    end
+end)
+
